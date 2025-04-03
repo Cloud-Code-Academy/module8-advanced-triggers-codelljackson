@@ -19,14 +19,19 @@ https://www.salesforceben.com/12-salesforce-apex-best-practices/
 https://developer.salesforce.com/blogs/developer-relations/2015/01/apex-best-practices-15-apex-commandments
 */
 trigger AnotherOpportunityTrigger on Opportunity (before insert, after insert, before update, after update, before delete, after delete, after undelete) {
-    if (Trigger.isBefore){
-        if (Trigger.isInsert){
-            // Set default Type for new Opportunities
-            Opportunity opp = Trigger.new[0];
+    
+    if (Trigger.isBefore && Trigger.isInsert) {
+    
+        for (Opportunity opp : Trigger.new) {
+        // Set default Type for new Opportunities
+        
             if (opp.Type == null){
-                opp.Type = 'New Customer';
-            }        
-        } else if (Trigger.isDelete){
+            opp.Type = 'New Customer'; 
+
+        }
+    }   
+}       
+        if (Trigger.isBefore && Trigger.isDelete){
             // Prevent deletion of closed Opportunities
             for (Opportunity oldOpp : Trigger.old){
                 if (oldOpp.IsClosed){
@@ -34,8 +39,7 @@ trigger AnotherOpportunityTrigger on Opportunity (before insert, after insert, b
                 }
             }
         }
-    }
-
+    
     if (Trigger.isAfter){
         if (Trigger.isInsert){
             // Create a new Task for newly inserted Opportunities

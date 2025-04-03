@@ -18,29 +18,72 @@ Methods:
     - Note: You'll likely need to adjust the method signature to accept the necessary parameters.
 
 - `setRating`: 
-    - Purpose: Evaluate certain conditions on the Account and assign a rating based on that evaluation. You'll need to define the method's signature and implement its logic.
+    - Purpose: Evaluate certain conditions on the Account and assign a rating based on that evaluation. You'll need to define the 
+    method's signature and implement its logic.
 
 - `defaultContact`: 
-    - Purpose: Create a default contact related to the Account after the Account is inserted. You'll need to define the method's signature and implement its logic.
+    - Purpose: Create a default contact related to the Account after the Account is inserted. You'll need to define the method's signature and 
+    implement its logic.
 
 Remember:
 Always ensure that your helper methods are bulk-safe to handle multiple records efficiently. 
 */
 public with sharing class AccountHelper {
     
-    public void setTypeProspect(SObject objects){
+    public static void setTypeProspect(List<Account> accounts){
 
+        for (Account acc : accounts){
+            if (String.isBlank(acc.Type)) {
+                acc.Type = 'Prospect';
+            }
+        }
     }
 
-    void addressCopy(){
+    public static void addressCopy(List<Account> accounts) {
+        
+        for (Account acc: accounts){
+        
+            if (!String.isBlank(acc.ShippingStreet) &&
+            !String.isBlank(acc.ShippingCity) &&
+            !String.isBlank(acc.ShippingState) &&
+            !String.isBlank(acc.ShippingPostalCode) &&
+            !String.isBlank(acc.ShippingCountry)) {
 
+            acc.BillingStreet     = acc.ShippingStreet;
+            acc.BillingCity       = acc.ShippingCity;
+            acc.BillingState      = acc.ShippingState;
+            acc.BillingPostalCode = acc.ShippingPostalCode;
+            acc.BillingCountry    = acc.ShippingCountry;
+            }
+        }
+    }
+    public static void setRating(List<Account> accounts) {
+    
+        for (Account acc: accounts) {
+
+            if (!String.isBlank(acc.Phone) &&
+                !String.isBlank(acc.Fax)   &&
+                !String.isBlank(acc.Website)) {
+                    acc.Rating = 'Hot';
+            }
+        }
     }
 
-    //[public | private ] [static] data_type setRating (input parameters) {
-    //  The body of the method
-    //}
+    public static void defaultContact (List<Account> accounts) {
+    
+        List<Contact> contactsToInsert = new List<Contact>();
 
-    //[public | private ] [static] data_type defaultContact (input parameters) {
-    //  The body of the method
-    //}
+        for (Account acc: accounts) {
+            
+            Contact newContact = new Contact (
+                LastName  = 'DefaultContact',
+                Email     = 'default@email.com',
+                AccountId = acc.Id);
+                contactsToInsert.add(newContact);
+        }
+        if (!contactsToInsert.isEmpty()){
+            insert contactsToInsert; 
+            
+        }
+    }
 }
