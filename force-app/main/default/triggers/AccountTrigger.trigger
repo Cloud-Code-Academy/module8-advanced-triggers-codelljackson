@@ -1,7 +1,8 @@
 /*
 AccountTrigger Overview
 
-This trigger performs several operations on the Account object during its insertion. Depending on the values and conditions of the newly created Account, this trigger can:
+This trigger performs several operations on the Account object during its insertion. Depending on 
+the values and conditions of the newly created Account, this trigger can:
 
 1. Set the account's type to 'Prospect' if it's not already set.
 2. Copy the shipping address of the account to its billing address.
@@ -25,12 +26,10 @@ trigger AccountTrigger on Account (before insert, after insert) {
     * Trigger should only fire on insert.
     */
     if (Trigger.isBefore && Trigger.isInsert) {
-        
         AccountHelper.setTypeProspect(Trigger.new);
         AccountHelper.addressCopy(Trigger.new);
-        AccountHelper.setRating(Trigger.new); 
+        AccountHelper.setRating(Trigger.new);
     }
-
     /*
     * Account Trigger
     * When an account is inserted create a contact related to the account with the following default values:
@@ -39,7 +38,6 @@ trigger AccountTrigger on Account (before insert, after insert) {
     * Trigger should only fire on insert.
     */    
     if(Trigger.isAfter && Trigger.isInsert){     
-        
         AccountHelper.defaultContact(Trigger.new);
     } 
 }
