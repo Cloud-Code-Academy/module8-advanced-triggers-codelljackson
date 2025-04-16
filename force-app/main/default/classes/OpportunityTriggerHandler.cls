@@ -16,6 +16,7 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
     }
 
     protected override void afterInsert() {
+
         if (Trigger.isInsert && Trigger.isAfter && !hasAlreadyRunInsert) { 
             hasAlreadyRunInsert = true; // Add this line
             createFollowUpTasks((List<Opportunity>) Trigger.new);
@@ -37,7 +38,7 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
         assignPrimaryContactVP((List<Opportunity>) Trigger.new);
     }
 
-    // --- Logic methods ---
+    
 
     private void setTypeForOpportunities(List<Opportunity> opps) {
         for (Opportunity opp : opps) {
@@ -71,7 +72,6 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
         List<Task> tasks = new List<Task>();
         for (Opportunity opp : opps) {
 
-            // Create Task only if Opportunity is not deleted (normal Insert, not Undelete)
             if (opp.IsDeleted == false) {
                 Task t = new Task(
                     Subject = 'Follow up on Opportunity',
@@ -93,8 +93,9 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
     private void updateOpportunityDescriptionOnStageChange(List<Opportunity> newOpps, Map<Id, Opportunity> oldOpps) {
         List<Opportunity> oppsToUpdate = new List<Opportunity>();
 
-        Map<Id, Opportunity> freshOpps = new Map<Id, Opportunity>([
-            SELECT Id, Description FROM Opportunity WHERE Id IN :newOpps
+        Map<Id, Opportunity> freshOpps = new Map<Id, Opportunity>([SELECT Id, Description 
+                                                                FROM Opportunity 
+                                                                WHERE Id IN :newOpps
         ]);
 
         for (Opportunity opp : newOpps) {
@@ -121,7 +122,7 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
     private void notifyOpportunityDeletion(List<Opportunity> opps) {
         List<Task> tasks = new List<Task>();
         for (Opportunity opp : opps) {
-            // No WhatId because Opportunity is deleted
+            
             Task t = new Task(
                 Subject = 'Opportunity Deleted',
                 OwnerId = opp.OwnerId,
@@ -149,17 +150,21 @@ public with sharing class OpportunityTriggerHandler extends TriggerHandler {
         if (accountIds.isEmpty()) return;
 
         Map<Id, Contact> accountIdToContact = new Map<Id, Contact>();
-        for (Contact con : [
-            SELECT Id, AccountId FROM Contact WHERE AccountId IN :accountIds AND Title = :title ORDER BY FirstName ASC
+        for (Contact con : [SELECT Id, AccountId 
+                            FROM Contact 
+                            WHERE AccountId IN :accountIds AND Title = :title ORDER BY FirstName ASC
         ]) {
             accountIdToContact.put(con.AccountId, con);
         }
 
         List<Opportunity> oppsToUpdate = new List<Opportunity>();
+
         for (Opportunity opp : opps) {
             if (accountIdToContact.containsKey(opp.AccountId)) {
+
                 if (Trigger.isBefore) {
                     opp.Primary_Contact__c = accountIdToContact.get(opp.AccountId).Id;
+
                 } else if (Trigger.isAfter) {
                     Opportunity updateOpp = new Opportunity(
                         Id = opp.Id,
